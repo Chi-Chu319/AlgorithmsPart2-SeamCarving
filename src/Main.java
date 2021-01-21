@@ -14,6 +14,30 @@ public class Main {
         Picture picture = new Picture(url);
         SeamCarver s = new SeamCarver(picture);
 
+//        picture = energyPicture(s);
+//        int[] seam = s.findHorizontalSeam();
+//
+//        for (int t =0; t<seam.length; t++){
+//            picture.set(t, seam[t], Color.red);
+//        }
+//        picture.show();
+
+
+        for (int t =0; t<20; t++){
+            int[] seam = s.findHorizontalSeam();
+//            picture = energyPicture(s);
+            picture = s.picture();
+            for (int i =0; i<seam.length; i++){
+                picture.set( i, seam[i], Color.red);
+            }
+            picture.show();
+            s.removeHorizontalSeam(seam);
+        }
+
+
+        /*
+         * show the RGB images with red path marked as seam
+         * */
 //        int[] verticalSeam = s.findVerticalSeam();
 //        picture = energyPicture(s);
 //        for (int t =0; t<verticalSeam.length; t++){
@@ -21,26 +45,29 @@ public class Main {
 //        }
 //        picture.show();
 //        s.removeVerticalSeam(verticalSeam);
-//
-        for (int t =0; t<140; t++){
-            int[] verticalSeam = s.findVerticalSeam();
-//            picture = energyPicture(s);
-////            picture = s.picture();
+
+        /*
+         * repeatedly show the gray scale/RGB images with red path marked as seam
+         * */
+//        for (int t =0; t<40; t++){
+//            int[] verticalSeam = s.findVerticalSeam();
+////            picture = energyPicture(s);
+//            picture = s.picture();
 //            for (int i =0; i<verticalSeam.length; i++){
 //                picture.set(verticalSeam[i], i, Color.red);
 //            }
 //            picture.show();
-            s.removeVerticalSeam(verticalSeam);
-        }
+//            s.removeVerticalSeam(verticalSeam);
+//        }
 //
-        picture = s.picture();
-        picture.show();
+//        picture = s.picture();
+//        picture.show();
 
 
 
 //        int width = picture.width();
-//        int heigit = picture.height();
-//        for (int i = 0 ; i < heigit; i++){
+//        int height = picture.height();
+//        for (int i = 0 ; i < height; i++){
 //            for (int t = 0 ; t < width; t++) {
 //                // the picture is immutable;
 //                Color color = picture.get(t ,i);

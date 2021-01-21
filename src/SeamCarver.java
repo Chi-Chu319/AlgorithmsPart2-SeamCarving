@@ -106,7 +106,67 @@ public class SeamCarver {
 
     // sequence of indices for horizontal seam
     public int[] findHorizontalSeam(){
-        return new int[1];
+        // the graph is in topological order if visit each vertex from left to right, up to down.
+        // relax edges outgoing from each vertex except from the last row
+        double[][] distTo = new double[width()][height()];
+        vertex[][] vertexTo = new vertex[width()][height()];
+
+        vertex virtualSource = new vertex(-1, -1);
+
+        // initialize the distance
+        for(double[] d : distTo) {
+            Arrays.fill(d, Double.POSITIVE_INFINITY);
+        }
+
+        // from virtual sink to the first row in the graph.
+        for (int i = 0; i < height(); i++) {
+            distTo[0][i] = 1000.0;
+            vertexTo[0][i] = virtualSource;
+        }
+
+        // edges with in the graph except for the last column.
+        for (int x = 0; x < width()-1; x++) {
+            for (int y = 0; y < height(); y++) {
+                if(y == 0){
+                    // upper edge
+                    relax(new edge(vertices[x][y], vertices[x+1][y]), distTo, vertexTo);
+                    relax(new edge(vertices[x][y], vertices[x+1][y+1]), distTo, vertexTo);
+                }
+                else  if (y == height() -1){
+                    // bottom edge
+                    relax(new edge(vertices[x][y], vertices[x+1][y-1]), distTo, vertexTo);
+                    relax(new edge(vertices[x][y], vertices[x+1][y]), distTo, vertexTo);
+                }
+                else{
+                    relax(new edge(vertices[x][y], vertices[x+1][y-1]), distTo, vertexTo);
+                    relax(new edge(vertices[x][y], vertices[x+1][y]), distTo, vertexTo);
+                    relax(new edge(vertices[x][y], vertices[x+1][y+1]), distTo, vertexTo);
+                }
+            }
+        }
+
+        // the final distance from the source to sink
+        double dist = Double.POSITIVE_INFINITY;
+        vertex vertex = new vertex(0, height()-1);
+
+        // edges from the last row in the graph to the virtual sink
+        for (int i = 0; i < height(); i++) {
+            if(dist > distTo[width()-1][i]){
+                dist = distTo[width()-1][i];
+                vertex = vertices[width()-1][i];
+            }
+        }
+
+        // reconstruct the path
+        int[] seam = new int[width()];
+        seam[width()-1] = vertex.Y();
+        for (int i = 1; i < width(); i++) {
+            vertex = vertexTo[vertex.X()][vertex.Y()];
+            seam[width()-1 - i] = vertex.Y();
+        }
+
+        return seam;
+
     }
 
     // sequence of indices for vertical seam
@@ -175,6 +235,18 @@ public class SeamCarver {
 
     // remove horizontal seam from current picture
     public void removeHorizontalSeam(int[] seam){
+        double[][] energies = new double[width][height-1];
+        Picture p = new Picture(width, height-1);
+        // update energy matrix and the picture
+        for (int x = 0; x < width(); x++) {
+            for (int y = 0; y < height()-1; y++) {
+                p.set(x, y, this.picture.get(x,(y>=seam[x]) ? y+1:y));
+                energies[x][y] = (y == seam[x] - 1 || y == seam[x]) ? computeEnergy(x,y) : energyMatrix[x][(y>=seam[x]) ? y+1:y];
+            }
+        }
+        this.energyMatrix = energies;
+        this.picture = p;
+        this.height = this.height - 1;
     }
 
     // remove vertical seam from current picture
