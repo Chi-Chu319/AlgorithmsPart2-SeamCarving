@@ -49,6 +49,7 @@ public class SeamCarver {
 
     // create a seam carver object based on the given picture
     public SeamCarver(Picture picture){
+        if (picture == null) throw new IllegalArgumentException("Null picture for constructor!");
         this.picture = picture;
         this.height = picture.height();
         this.width = picture.width();
@@ -83,6 +84,7 @@ public class SeamCarver {
 
     // return the precomputed energy
     public double energy(int x, int y) {
+        if (x < 0 || x >= width || y < 0 || y >= height) throw new IllegalArgumentException("x or y not with in range!");
         return energyMatrix[x][y];
     }
 
@@ -127,21 +129,9 @@ public class SeamCarver {
         // edges with in the graph except for the last column.
         for (int x = 0; x < width()-1; x++) {
             for (int y = 0; y < height(); y++) {
-                if(y == 0){
-                    // upper edge
-                    relax(new edge(vertices[x][y], vertices[x+1][y]), distTo, vertexTo);
-                    relax(new edge(vertices[x][y], vertices[x+1][y+1]), distTo, vertexTo);
-                }
-                else  if (y == height() -1){
-                    // bottom edge
-                    relax(new edge(vertices[x][y], vertices[x+1][y-1]), distTo, vertexTo);
-                    relax(new edge(vertices[x][y], vertices[x+1][y]), distTo, vertexTo);
-                }
-                else{
-                    relax(new edge(vertices[x][y], vertices[x+1][y-1]), distTo, vertexTo);
-                    relax(new edge(vertices[x][y], vertices[x+1][y]), distTo, vertexTo);
-                    relax(new edge(vertices[x][y], vertices[x+1][y+1]), distTo, vertexTo);
-                }
+                if (y != 0) relax(new edge(vertices[x][y], vertices[x+1][y-1]), distTo, vertexTo);
+                relax(new edge(vertices[x][y], vertices[x+1][y]), distTo, vertexTo);
+                if (y != height() -1) relax(new edge(vertices[x][y], vertices[x+1][y+1]), distTo, vertexTo);
             }
         }
 
@@ -192,21 +182,9 @@ public class SeamCarver {
         // edges with in the graph except for the last row
         for (int y = 0; y < height()-1; y++) {
             for (int x = 0; x < width(); x++) {
-                if(x == 0){
-                    // left edge
-                    relax(new edge(vertices[x][y], vertices[x][y+1]), distTo, vertexTo);
-                    relax(new edge(vertices[x][y], vertices[x+1][y+1]), distTo, vertexTo);
-                }
-                else  if (x == width() -1){
-                    // right edge
-                    relax(new edge(vertices[x][y], vertices[x-1][y+1]), distTo, vertexTo);
-                    relax(new edge(vertices[x][y], vertices[x][y+1]), distTo, vertexTo);
-                }
-                else{
-                    relax(new edge(vertices[x][y], vertices[x-1][y+1]), distTo, vertexTo);
-                    relax(new edge(vertices[x][y], vertices[x][y+1]), distTo, vertexTo);
-                    relax(new edge(vertices[x][y], vertices[x+1][y+1]), distTo, vertexTo);
-                }
+                if(x != 0) relax(new edge(vertices[x][y], vertices[x-1][y+1]), distTo, vertexTo);
+                relax(new edge(vertices[x][y], vertices[x][y+1]), distTo, vertexTo);
+                if (x != width() -1) relax(new edge(vertices[x][y], vertices[x+1][y+1]), distTo, vertexTo);
             }
         }
 
@@ -235,6 +213,7 @@ public class SeamCarver {
 
     // remove horizontal seam from current picture
     public void removeHorizontalSeam(int[] seam){
+        if (width <= 1) throw new IllegalArgumentException("Picture too small.");
         double[][] energies = new double[width][height-1];
         Picture p = new Picture(width, height-1);
         // update energy matrix and the picture
@@ -251,6 +230,7 @@ public class SeamCarver {
 
     // remove vertical seam from current picture
     public void removeVerticalSeam(int[] seam){
+        if (height <= 1) throw new IllegalArgumentException("Picture too small.");
         double[][] energies = new double[width-1][height];
         Picture p = new Picture(width-1, height);
         // update energy matrix and the picture
@@ -263,6 +243,24 @@ public class SeamCarver {
         this.energyMatrix = energies;
         this.picture = p;
         this.width = this.width - 1;
+    }
+
+    public void validateVerticalSeam(int[] seam){
+        if (seam == null || seam.length != height) throw new IllegalArgumentException("null seam");
+        int prev = seam[0];
+        for(int pixel : seam){
+            if (pixel < 0 ||pixel >= height || Math.abs(prev - pixel)>1) throw new IllegalArgumentException("Illegal seam");
+            prev = pixel;
+        }
+    }
+
+    public void validateHorizontalSeam(int[] seam){
+        if (seam == null || seam.length != width) throw new IllegalArgumentException("null seam");
+        int prev = seam[0];
+        for(int pixel : seam){
+            if (pixel < 0 || pixel >= width || Math.abs(prev - pixel)>1) throw new IllegalArgumentException("Illegal seam");
+            prev = pixel;
+        }
     }
 
     //  unit testing (optional)
