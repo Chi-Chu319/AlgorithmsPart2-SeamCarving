@@ -1,6 +1,6 @@
 import edu.princeton.cs.algs4.Picture;
-import java.util.Stack;
-import java.awt.*;
+
+import java.awt.Color;
 import java.util.Arrays;
 
 public class SeamCarver {
@@ -27,8 +27,8 @@ public class SeamCarver {
     }
 
     // compute the energy of pixel at column x and row y
-    private double computeEnergy(int x, int y){
-        if ((x == 0 || x == width() -1) || (y == 0 || y == height() -1)) {energyMatrix[x][y] = 1000; return 1000;}
+    private double computeEnergy(int x, int y, boolean returnValue){
+        if ((x == 0 || x == width() -1) || (y == 0 || y == height() -1)) { if(!returnValue)energyMatrix[x][y] = 1000; return 1000;}
         Color _this = picture.get(x - 1, y);
         Color _that = picture.get(x + 1, y);
         int Rx = _this.getRed() - _that.getRed();
@@ -42,7 +42,7 @@ public class SeamCarver {
         int By = _this.getBlue() - _that.getBlue();
 
         double temp = Math.sqrt(Math.pow(Rx, 2) + Math.pow(Gx, 2) + Math.pow(Bx, 2) + Math.pow(Ry, 2) + Math.pow(Gy, 2) + Math.pow(By, 2));
-        energyMatrix[x][y] = temp;
+        if(!returnValue) energyMatrix[x][y] = temp;
         return temp;
 
     }
@@ -59,7 +59,7 @@ public class SeamCarver {
 
         for (int i = 0; i < width(); i++){
             for (int t = 0; t < height(); t++) {
-                computeEnergy(i, t);
+                computeEnergy(i, t, false);
             }
         }
         // construct vertex reference for methods.
@@ -213,14 +213,15 @@ public class SeamCarver {
 
     // remove horizontal seam from current picture
     public void removeHorizontalSeam(int[] seam){
-        if (width <= 1) throw new IllegalArgumentException("Picture too small.");
+        if (height <= 1) throw new IllegalArgumentException("Picture too small.");
+        validateHorizontalSeam(seam);
         double[][] energies = new double[width][height-1];
         Picture p = new Picture(width, height-1);
         // update energy matrix and the picture
         for (int x = 0; x < width(); x++) {
             for (int y = 0; y < height()-1; y++) {
                 p.set(x, y, this.picture.get(x,(y>=seam[x]) ? y+1:y));
-                energies[x][y] = (y == seam[x] - 1 || y == seam[x]) ? computeEnergy(x,y) : energyMatrix[x][(y>=seam[x]) ? y+1:y];
+                energies[x][y] = (y == seam[x] - 1 || y == seam[x]) ? computeEnergy(x,y, true) : energyMatrix[x][(y>=seam[x]) ? y+1:y];
             }
         }
         this.energyMatrix = energies;
@@ -230,14 +231,15 @@ public class SeamCarver {
 
     // remove vertical seam from current picture
     public void removeVerticalSeam(int[] seam){
-        if (height <= 1) throw new IllegalArgumentException("Picture too small.");
+        if (width <= 1) throw new IllegalArgumentException("Picture too small.");
+        validateVerticalSeam(seam);
         double[][] energies = new double[width-1][height];
         Picture p = new Picture(width-1, height);
         // update energy matrix and the picture
         for (int x = 0; x < width()-1; x++) {
             for (int y = 0; y < height(); y++) {
                 p.set(x, y, this.picture.get((x>=seam[y]) ? x+1:x, y));
-                energies[x][y] = (x == seam[y] - 1 ||x == seam[y]) ? computeEnergy(x,y) : energyMatrix[(x>=seam[y]) ? x+1:x][y];
+                energies[x][y] = (x == seam[y] - 1 ||x == seam[y]) ? computeEnergy(x, y,true) : energyMatrix[(x>=seam[y]) ? x+1:x][y];
             }
         }
         this.energyMatrix = energies;
@@ -245,20 +247,20 @@ public class SeamCarver {
         this.width = this.width - 1;
     }
 
-    public void validateVerticalSeam(int[] seam){
+    private void validateVerticalSeam(int[] seam){
         if (seam == null || seam.length != height) throw new IllegalArgumentException("null seam");
         int prev = seam[0];
         for(int pixel : seam){
-            if (pixel < 0 ||pixel >= height || Math.abs(prev - pixel)>1) throw new IllegalArgumentException("Illegal seam");
+            if (pixel < 0 || pixel >= width || Math.abs(prev - pixel) > 1) { throw new IllegalArgumentException("Illegal seam");}
             prev = pixel;
         }
     }
 
-    public void validateHorizontalSeam(int[] seam){
+    private void validateHorizontalSeam(int[] seam){
         if (seam == null || seam.length != width) throw new IllegalArgumentException("null seam");
         int prev = seam[0];
         for(int pixel : seam){
-            if (pixel < 0 || pixel >= width || Math.abs(prev - pixel)>1) throw new IllegalArgumentException("Illegal seam");
+            if (pixel < 0 || pixel >= height || Math.abs(prev - pixel) > 1) { throw new IllegalArgumentException("Illegal seam");}
             prev = pixel;
         }
     }
