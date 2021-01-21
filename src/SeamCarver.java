@@ -8,23 +8,23 @@ public class SeamCarver {
     private double[][] energyMatrix;
     private int height;
     private int width;
-    private vertex[][] vertices;
+//    private vertex[][] vertices;
 
-    private class vertex{
-        private final int x;
-        private final int y;
-        public vertex(int x, int y){ this.x = x; this.y = y; }
-        public int X(){return x;}
-        public int Y(){return y;}
-    }
+//    private class vertex{
+//        private final int x;
+//        private final int y;
+//        public vertex(int x, int y){ this.x = x; this.y = y; }
+//        public int X(){return x;}
+//        public int Y(){return y;}
+//    }
 
-    private class edge{
-        private final vertex v;
-        private final vertex w;
-        public edge(vertex v, vertex w){ this.v = v; this.w = w;}
-        public vertex v(){return v;}
-        public vertex w(){return w;}
-    }
+//    private class edge{
+//        private final vertex v;
+//        private final vertex w;
+//        public edge(vertex v, vertex w){ this.v = v; this.w = w;}
+//        public vertex v(){return v;}
+//        public vertex w(){return w;}
+//    }
 
     // compute the energy of pixel at column x and row y
     private double computeEnergy(int x, int y, boolean returnValue){
@@ -62,8 +62,8 @@ public class SeamCarver {
             }
         }
         // construct vertex reference for methods.
-        vertices = new vertex[width][height];
-        vertexMap();
+//        vertices = new vertex[width][height];
+//        vertexMap();
     }
 
     // current picture
@@ -87,21 +87,19 @@ public class SeamCarver {
         return energyMatrix[x][y];
     }
 
-    private void vertexMap(){
-        for (int x = 0; x < width(); x++) {
-            for (int y = 0; y < height(); y++) {
-                vertices[x][y] = new vertex(x, y);
-            }
-        }
-    }
+//    private void vertexMap(){
+//        for (int x = 0; x < width(); x++) {
+//            for (int y = 0; y < height(); y++) {
+//                vertices[x][y] = new vertex(x, y);
+//            }
+//        }
+//    }
 
-    private void relax(edge e, double[][] distTo, vertex[][] vertexTo){
-        vertex v = e.v();
-        vertex w = e.w();
-        double weight = energyMatrix[w.X()][w.Y()];
-        if (distTo[w.X()][w.Y()] > distTo[v.X()][v.Y()] + weight){
-            distTo[w.X()][w.Y()] = distTo[v.X()][v.Y()] + weight;
-            vertexTo[w.X()][w.Y()] = v;
+    private void relax(int vx, int vy, int wx, int wy, double[][] distTo, int[][] vertexTo, boolean horizontal){
+        double weight = energyMatrix[wx][wy];
+        if (distTo[wx][wy] > distTo[vx][vy] + weight){
+            distTo[wx][wy] = distTo[vx][vy] + weight;
+            vertexTo[wx][wy] = (horizontal) ? vy:vx;
         }
     }
 
@@ -110,9 +108,9 @@ public class SeamCarver {
         // the graph is in topological order if visit each vertex from left to right, up to down.
         // relax edges outgoing from each vertex except from the last row
         double[][] distTo = new double[width()][height()];
-        vertex[][] vertexTo = new vertex[width()][height()];
+        int[][] vertexTo = new int[width()][height()];
 
-        vertex virtualSource = new vertex(-1, -1);
+        int virtualSource = -1;
 
         // initialize the distance
         for(double[] d : distTo) {
@@ -128,30 +126,30 @@ public class SeamCarver {
         // edges with in the graph except for the last column.
         for (int x = 0; x < width()-1; x++) {
             for (int y = 0; y < height(); y++) {
-                if (y != 0) relax(new edge(vertices[x][y], vertices[x+1][y-1]), distTo, vertexTo);
-                relax(new edge(vertices[x][y], vertices[x+1][y]), distTo, vertexTo);
-                if (y != height() -1) relax(new edge(vertices[x][y], vertices[x+1][y+1]), distTo, vertexTo);
+                if (y != 0) relax(x, y, x+1,y-1, distTo, vertexTo, true);
+                relax(x, y, x+1, y, distTo, vertexTo, true);
+                if (y != height() -1) relax(x, y, x+1, y+1, distTo, vertexTo, true);
             }
         }
 
         // the final distance from the source to sink
         double dist = Double.POSITIVE_INFINITY;
-        vertex vertex = new vertex(0, height()-1);
+        int vertex = 0;
 
         // edges from the last row in the graph to the virtual sink
         for (int i = 0; i < height(); i++) {
             if(dist > distTo[width()-1][i]){
                 dist = distTo[width()-1][i];
-                vertex = vertices[width()-1][i];
+                vertex = i;
             }
         }
 
         // reconstruct the path
         int[] seam = new int[width()];
-        seam[width()-1] = vertex.Y();
+        seam[width()-1] = vertex;
         for (int i = 1; i < width(); i++) {
-            vertex = vertexTo[vertex.X()][vertex.Y()];
-            seam[width()-1 - i] = vertex.Y();
+            vertex = vertexTo[width() - i][vertex];
+            seam[width() - 1 - i] = vertex;
         }
 
         return seam;
@@ -163,9 +161,9 @@ public class SeamCarver {
         // the graph is in topological order if visit each vertex from left to right, up to down.
         // relax edges outgoing from each vertex except from the last row
         double[][] distTo = new double[width()][height()];
-        vertex[][] vertexTo = new vertex[width()][height()];
+        int[][] vertexTo = new int[width()][height()];
 
-        vertex virtualSource = new vertex(-1, -1);
+        int virtualSource = -1;
 
         // initialize the distance
         for(double[] d : distTo) {
@@ -181,30 +179,30 @@ public class SeamCarver {
         // edges with in the graph except for the last row
         for (int y = 0; y < height()-1; y++) {
             for (int x = 0; x < width(); x++) {
-                if(x != 0) relax(new edge(vertices[x][y], vertices[x-1][y+1]), distTo, vertexTo);
-                relax(new edge(vertices[x][y], vertices[x][y+1]), distTo, vertexTo);
-                if (x != width() -1) relax(new edge(vertices[x][y], vertices[x+1][y+1]), distTo, vertexTo);
+                if(x != 0) relax(x, y, x-1, y+1, distTo, vertexTo, false);
+                relax(x, y, x, y+1, distTo, vertexTo, false);
+                if (x != width() -1) relax(x, y, x+1, y+1, distTo, vertexTo, false);
             }
         }
 
         // the final distance from the source to sink
         double dist = Double.POSITIVE_INFINITY;
-        vertex vertex = new vertex(0, height()-1);
+        int vertex = 0;
 
         // edges from the last row in the graph to the virtual sink
         for (int i = 0; i < width(); i++) {
             if(dist > distTo[i][height()-1]){
                 dist = distTo[i][height()-1];
-                vertex = vertices[i][height()-1];
+                vertex = i;
             }
         }
 
         // reconstruct the path
         int[] seam = new int[height()];
-        seam[height()-1] = vertex.X();
+        seam[height()-1] = vertex;
         for (int i = 1; i < height(); i++) {
-            vertex = vertexTo[vertex.X()][vertex.Y()];
-            seam[height()-1 - i] = vertex.X();
+            vertex = vertexTo[vertex][height() - i];
+            seam[height() - 1 - i] = vertex;
         }
 
         return seam;
