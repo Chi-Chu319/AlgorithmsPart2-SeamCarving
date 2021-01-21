@@ -23,16 +23,16 @@ public class Main {
 //        picture.show();
 
 
-        for (int t =0; t<20; t++){
-            int[] seam = s.findHorizontalSeam();
-//            picture = energyPicture(s);
-            picture = s.picture();
-            for (int i =0; i<seam.length; i++){
-                picture.set( i, seam[i], Color.red);
-            }
-            picture.show();
-            s.removeHorizontalSeam(seam);
-        }
+//        for (int t =0; t<20; t++){
+//            int[] seam = s.findHorizontalSeam();
+////            picture = energyPicture(s);
+//            picture = s.picture();
+//            for (int i =0; i<seam.length; i++){
+//                picture.set( i, seam[i], Color.red);
+//            }
+//            picture.show();
+//            s.removeHorizontalSeam(seam);
+//        }
 
 
         /*
@@ -49,16 +49,16 @@ public class Main {
         /*
          * repeatedly show the gray scale/RGB images with red path marked as seam
          * */
-//        for (int t =0; t<40; t++){
-//            int[] verticalSeam = s.findVerticalSeam();
-////            picture = energyPicture(s);
-//            picture = s.picture();
-//            for (int i =0; i<verticalSeam.length; i++){
-//                picture.set(verticalSeam[i], i, Color.red);
-//            }
-//            picture.show();
-//            s.removeVerticalSeam(verticalSeam);
-//        }
+        for (int t =0; t<40; t++){
+            int[] verticalSeam = s.findVerticalSeam();
+//            picture = energyPicture(s);
+            picture = s.picture();
+            for (int i =0; i<verticalSeam.length; i++){
+                picture.set(verticalSeam[i], i, Color.red);
+            }
+            picture.show();
+            s.removeVerticalSeam(verticalSeam);
+        }
 //
 //        picture = s.picture();
 //        picture.show();
