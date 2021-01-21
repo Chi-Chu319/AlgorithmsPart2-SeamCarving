@@ -27,8 +27,8 @@ public class SeamCarver {
     }
 
     // compute the energy of pixel at column x and row y
-    private void computeEnergy(int x, int y){
-        if ((x == 0 || x == width() -1) || (y == 0 || y == height() -1)) {energyMatrix[x][y] = 1000; return;}
+    private double computeEnergy(int x, int y){
+        if ((x == 0 || x == width() -1) || (y == 0 || y == height() -1)) {energyMatrix[x][y] = 1000; return 1000;}
         Color _this = picture.get(x - 1, y);
         Color _that = picture.get(x + 1, y);
         int Rx = _this.getRed() - _that.getRed();
@@ -41,7 +41,10 @@ public class SeamCarver {
         int Gy = _this.getGreen() - _that.getGreen();
         int By = _this.getBlue() - _that.getBlue();
 
-        energyMatrix[x][y] = Math.sqrt(Math.pow(Rx, 2) + Math.pow(Gx, 2) + Math.pow(Bx, 2) + Math.pow(Ry, 2) + Math.pow(Gy, 2) + Math.pow(By, 2));
+        double temp = Math.sqrt(Math.pow(Rx, 2) + Math.pow(Gx, 2) + Math.pow(Bx, 2) + Math.pow(Ry, 2) + Math.pow(Gy, 2) + Math.pow(By, 2));
+        energyMatrix[x][y] = temp;
+        return temp;
+
     }
 
     // create a seam carver object based on the given picture
@@ -176,14 +179,16 @@ public class SeamCarver {
 
     // remove vertical seam from current picture
     public void removeVerticalSeam(int[] seam){
+        double[][] energies = new double[width-1][height];
         Picture p = new Picture(width-1, height);
+        // update energy matrix and the picture
         for (int x = 0; x < width()-1; x++) {
             for (int y = 0; y < height(); y++) {
-                int _x = (x>=seam[y]) ? x+1:x;
-                p.set(x, y, this.picture.get(_x, y));
+                p.set(x, y, this.picture.get((x>=seam[y]) ? x+1:x, y));
+                energies[x][y] = (x == seam[y] - 1 ||x == seam[y]) ? computeEnergy(x,y) : energyMatrix[(x>=seam[y]) ? x+1:x][y];
             }
         }
-        // todo update energy
+        this.energyMatrix = energies;
         this.picture = p;
         this.width = this.width - 1;
     }

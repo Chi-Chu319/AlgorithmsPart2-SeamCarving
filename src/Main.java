@@ -22,19 +22,17 @@ public class Main {
 //        picture.show();
 //        s.removeVerticalSeam(verticalSeam);
 //
-        for (int t =0; t<90; t++){
+        for (int t =0; t<140; t++){
             int[] verticalSeam = s.findVerticalSeam();
-            System.out.print("The seam is:");
-            System.out.println(Arrays.toString(verticalSeam));
 //            picture = energyPicture(s);
-//            picture = s.picture();
+////            picture = s.picture();
 //            for (int i =0; i<verticalSeam.length; i++){
 //                picture.set(verticalSeam[i], i, Color.red);
 //            }
 //            picture.show();
             s.removeVerticalSeam(verticalSeam);
         }
-
+//
         picture = s.picture();
         picture.show();
 
